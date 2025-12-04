@@ -1,0 +1,120 @@
+### Complete API Testing Workflow
+### This file demonstrates the complete flow from registration to user management
+
+### Variables
+@baseUrl = http://localhost:8000
+@apiVersion = v1
+@username = testuser
+@testEmail = testuser@example.com
+@testPassword = testpassword123
+
+### Step 1: Health Check
+GET {{baseUrl}}/health
+
+###
+
+### Step 2: Register New User
+POST {{baseUrl}}/api/{{apiVersion}}/auth/register
+Content-Type: application/json
+
+{
+    "username": "{{username}}",
+    "email": "{{testEmail}}",
+    "password": "{{testPassword}}",
+    "full_name": "Test User"
+}
+
+###
+
+### Step 3: Login to Get Token
+POST {{baseUrl}}/api/{{apiVersion}}/auth/token
+Content-Type: application/x-www-form-urlencoded
+
+username={{username}}&password={{testPassword}}
+
+###
+
+### Step 4: Get Current User Profile
+# Copy the access_token from Step 3 response
+@accessToken = your_access_token_from_step_3
+
+GET {{baseUrl}}/api/{{apiVersion}}/auth/profile
+Authorization: Bearer {{accessToken}}
+
+###
+
+### Step 5: List All Users
+GET {{baseUrl}}/api/{{apiVersion}}/users/
+Authorization: Bearer {{accessToken}}
+
+###
+
+### Step 6: Create Another User
+POST {{baseUrl}}/api/{{apiVersion}}/users/
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+    "username": "seconduser",
+    "email": "second@example.com",
+    "password": "secondpassword123",
+    "full_name": "Second User",
+    "is_active": true
+}
+
+###
+
+### Step 7: Get User by ID
+# Replace with actual user ID from Step 6 response
+@userId = user_id_from_step_6
+
+GET {{baseUrl}}/api/{{apiVersion}}/users/{{userId}}
+Authorization: Bearer {{accessToken}}
+
+###
+
+### Step 8: Update User
+PUT {{baseUrl}}/api/{{apiVersion}}/users/{{userId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+    "username": "updatedseconduser",
+    "email": "updatedsecond@example.com",
+    "full_name": "Updated Second User",
+    "is_active": true
+}
+
+###
+
+### Step 9: Test Language Settings
+POST {{baseUrl}}/api/{{apiVersion}}/language/set
+Content-Type: application/json
+
+{
+    "language": "en"
+}
+
+###
+
+### Step 10: Get Available Languages
+GET {{baseUrl}}/api/{{apiVersion}}/language/
+
+###
+
+### Step 11: Test Error Handling
+GET {{baseUrl}}/api/{{apiVersion}}/nonexistent
+
+###
+
+### Step 12: Clean Up - Delete Test User
+DELETE {{baseUrl}}/api/{{apiVersion}}/users/{{userId}}
+Authorization: Bearer {{accessToken}}
+
+###
+
+### Step 13: Verify User Deleted
+GET {{baseUrl}}/api/{{apiVersion}}/users/{{userId}}
+Authorization: Bearer {{accessToken}}
+
+###

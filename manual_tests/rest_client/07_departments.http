@@ -1,0 +1,232 @@
+### Department Management Endpoints
+### Base URL: http://localhost:8000
+
+### Variables
+@baseUrl = http://localhost:8000
+@apiVersion = v1
+
+@accessToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0dXNlciIsImV4cCI6MTc2MTgwOTM3NX0.guaEBHcgBMTgut6ioXuQWU7vktiE1JxSoePGcUH_Y0Y
+
+@departmentId = 1707751e-4d57-4ae9-ae91-d569909276a9
+
+### 1. List All Departments (Protected)
+GET {{baseUrl}}/api/{{apiVersion}}/departments/
+Authorization: Bearer {{accessToken}}
+
+###
+
+### 2. List Departments with Pagination
+GET {{baseUrl}}/api/{{apiVersion}}/departments/?skip=0&limit=10
+Authorization: Bearer {{accessToken}}
+
+###
+
+### 3. Create New Department (Simple)
+POST {{baseUrl}}/api/{{apiVersion}}/departments/
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+    "department_name": "Engineering",
+    "budget": 1000000.00,
+    "is_active": true
+}
+
+###
+
+### 4. Create New Department (With Nested Employees)
+POST {{baseUrl}}/api/{{apiVersion}}/departments/
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+    "department_name": "Product",
+    "budget": 50,
+    "is_active": true,
+    "employees": [
+        {
+            "employee_name": "John Doe",
+            "email": "john1.doe@example.com",
+            "position": "Product Manager",
+            "hire_date": "2024-01-01",
+            "is_active": true
+        },
+        {
+            "employee_name": "Jane Smith",
+            "email": "jane.smith@example.com",
+            "position": "Product Designer",
+            "hire_date": "2024-01-01",
+            "is_active": true
+        }
+    ]
+}
+
+###
+
+### 5. Create New Department (With Nested Managers)
+POST {{baseUrl}}/api/{{apiVersion}}/departments/
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+    "department_name": "Sales",
+    "budget": 75,
+    "is_active": true,
+    "managers": [
+        {
+            "employee_id": "d2f46675-abe4-4852-aadc-5f9133689552",
+            "manager_name": "Bob Johnson",
+            "email": "bob2.johnson@example.com",
+            "phone": "+1234567890",
+            "appointed_date": "2024-01-01",
+            "management_level": "Senior Manager",
+            "is_active": true
+        }
+    ]
+}
+
+###
+
+### 6. Get Department by ID
+GET {{baseUrl}}/api/{{apiVersion}}/departments/{{departmentId}}
+Authorization: Bearer {{accessToken}}
+
+###
+
+### 7. Update Department (Partial Update)
+PUT {{baseUrl}}/api/{{apiVersion}}/departments/{{departmentId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+    "department_name": "Engineering - Updated",
+    "budget": 1200000.00,
+    "updated_at": "2025-10-28T07:54:27.446878"
+}
+
+###
+
+### 8. Update Department Name Only
+PUT {{baseUrl}}/api/{{apiVersion}}/departments/{{departmentId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+    "department_name": "Engineering Department",
+    "updated_at": "2025-10-30T07:02:11.046184"
+}
+
+###
+
+### 9. Update Department Budget Only
+PUT {{baseUrl}}/api/{{apiVersion}}/departments/{{departmentId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+    "budget": 1500000.00,
+    "updated_at": "2024-01-01T00:00:00Z"
+}
+
+###
+
+### 10. Deactivate Department (Soft Delete)
+DELETE {{baseUrl}}/api/{{apiVersion}}/departments/{{departmentId}}?hard_delete=false
+Authorization: Bearer {{accessToken}}
+
+###
+
+### 11. Hard Delete Department
+DELETE {{baseUrl}}/api/{{apiVersion}}/departments/{{departmentId}}?hard_delete=true
+Authorization: Bearer {{accessToken}}
+
+###
+=
+###
+
+### 13. Create Multiple Departments (Sequential)
+# Create Department 1
+POST {{baseUrl}}/api/{{apiVersion}}/departments/
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+    "department_name": "Marketing",
+    "budget": 600000.00,
+    "is_active": true
+}
+
+###
+
+# Create Department 2
+POST {{baseUrl}}/api/{{apiVersion}}/departments/
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+    "department_name": "Human Resources",
+    "budget": 300000.00,
+    "is_active": true
+}
+
+###
+
+### 14. Test Validation Error (Missing Required Fields)
+POST {{baseUrl}}/api/{{apiVersion}}/departments/
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+    "department_name": "Invalid Department"
+}
+
+###
+
+### 15. Test Validation Error (Missing is_active)
+POST {{baseUrl}}/api/{{apiVersion}}/departments/
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+    "department_name": "Another Department",
+    "budget": 500000.00
+}
+
+###
+
+### 16. Test Not Found Error
+GET {{baseUrl}}/api/{{apiVersion}}/departments/00000000-0000-0000-0000-000000000000
+Authorization: Bearer {{accessToken}}
+
+###
+
+### 17. Test Update with Invalid ID
+PUT {{baseUrl}}/api/{{apiVersion}}/departments/invalid-id
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+    "department_name": "Updated Name",
+    "updated_at": "2024-01-01T00:00:00Z"
+}
+
+###
+
+### 18. Test Delete Non-Existent Department
+DELETE {{baseUrl}}/api/{{apiVersion}}/departments/00000000-0000-0000-0000-000000000000
+Authorization: Bearer {{accessToken}}
+
+###
+
+### 19. Test Without Authorization (Should Fail)
+GET {{baseUrl}}/api/{{apiVersion}}/departments/
+Content-Type: application/json
+
+###
+
+### 20. Test with Invalid Token (Should Fail)
+GET {{baseUrl}}/api/{{apiVersion}}/departments/
+Authorization: Bearer invalid_token_here
+Content-Type: application/json
+
+###

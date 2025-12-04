@@ -1,0 +1,141 @@
+### Performance and Load Testing
+### Basic performance testing scenarios
+
+### Variables
+@baseUrl = http://localhost:8000
+@apiVersion = v1
+@accessToken = your_access_token_here
+
+### 1. Health Check (Baseline)
+GET {{baseUrl}}/health
+
+###
+
+### 2. Multiple Rapid Health Checks
+GET {{baseUrl}}/health
+
+###
+
+GET {{baseUrl}}/health
+
+###
+
+GET {{baseUrl}}/health
+
+###
+
+### 3. Authentication Performance
+POST {{baseUrl}}/api/{{apiVersion}}/auth/login
+Content-Type: application/json
+
+{
+    "username": "test@example.com",
+    "password": "testpassword123"
+}
+
+###
+
+### 4. User List Performance
+GET {{baseUrl}}/api/{{apiVersion}}/users/
+Authorization: Bearer {{accessToken}}
+
+###
+
+### 5. Multiple User List Requests
+GET {{baseUrl}}/api/{{apiVersion}}/users/
+Authorization: Bearer {{accessToken}}
+
+###
+
+GET {{baseUrl}}/api/{{apiVersion}}/users/
+Authorization: Bearer {{accessToken}}
+
+###
+
+GET {{baseUrl}}/api/{{apiVersion}}/users/
+Authorization: Bearer {{accessToken}}
+
+###
+
+### 6. Concurrent User Creation
+POST {{baseUrl}}/api/{{apiVersion}}/users/
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+    "username": "perfuser1",
+    "email": "perfuser1@example.com",
+    "password": "perfpassword123",
+    "full_name": "Performance User 1",
+    "is_active": true
+}
+
+###
+
+POST {{baseUrl}}/api/{{apiVersion}}/users/
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+    "username": "perfuser2",
+    "email": "perfuser2@example.com",
+    "password": "perfpassword123",
+    "full_name": "Performance User 2",
+    "is_active": true
+}
+
+###
+
+POST {{baseUrl}}/api/{{apiVersion}}/users/
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+    "username": "perfuser3",
+    "email": "perfuser3@example.com",
+    "password": "perfpassword123",
+    "full_name": "Performance User 3",
+    "is_active": true
+}
+
+###
+
+### 7. Language API Performance
+GET {{baseUrl}}/api/{{apiVersion}}/language/
+
+###
+
+POST {{baseUrl}}/api/{{apiVersion}}/language/set
+Content-Type: application/json
+
+{
+    "language": "en"
+}
+
+###
+
+### 8. API Documentation Performance
+GET {{baseUrl}}/docs
+
+###
+
+GET {{baseUrl}}/openapi.json
+
+###
+
+### 9. Clean Up Performance Test Users
+# Note: You'll need to get the actual user IDs from the creation responses
+# DELETE {{baseUrl}}/api/{{apiVersion}}/users/perfuser1_id
+# Authorization: Bearer {{accessToken}}
+
+###
+
+# DELETE {{baseUrl}}/api/{{apiVersion}}/users/perfuser2_id
+# Authorization: Bearer {{accessToken}}
+
+###
+
+# DELETE {{baseUrl}}/api/{{apiVersion}}/users/perfuser3_id
+# Authorization: Bearer {{accessToken}}
+
+###

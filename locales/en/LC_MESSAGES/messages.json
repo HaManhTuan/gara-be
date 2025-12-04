@@ -1,0 +1,67 @@
+{
+  "auth": {
+    "login_success": "Login successful",
+    "login_failed": "Invalid username or password",
+    "login_inactive_user": "Inactive user",
+    "register_success": "Registration successful",
+    "register_user_exists": "User already exists",
+    "token_invalid": "Could not validate credentials",
+    "token_expired": "Token has expired",
+    "token_missing": "Authentication token is missing",
+    "profile_updated": "Profile updated successfully",
+    "profile_not_found": "Profile not found",
+    "password_mismatch": "Passwords do not match",
+    "invalid_email": "Invalid email format",
+    "username_too_short": "Username must be at least 3 characters",
+    "username_too_long": "Username must be at most 50 characters",
+    "password_too_short": "Password must be at least 8 characters"
+  },
+  "user": {
+    "user_not_found": "User not found",
+    "user_created": "User created successfully",
+    "user_updated": "User updated successfully",
+    "user_deleted": "User deleted successfully",
+    "user_restored": "User restored successfully",
+    "email_already_exists": "Email already exists",
+    "username_already_exists": "Username already exists"
+  },
+  "validation": {
+    "required_field": "This field is required",
+    "invalid_format": "Invalid format",
+    "field_too_short": "Field is too short",
+    "field_too_long": "Field is too long",
+    "invalid_value": "Invalid value"
+  },
+  "optimistic_lock": {
+    "conflict": "Record was modified by another process. Please refresh and try again.",
+    "not_found": "Record not found",
+    "invalid_timestamp": "Invalid updated_at timestamp format"
+  },
+  "general": {
+    "success": "Success",
+    "error": "Error",
+    "not_found": "Not found",
+    "unauthorized": "Unauthorized",
+    "forbidden": "Forbidden",
+    "internal_error": "An unexpected error occurred",
+    "bad_request": "Bad request",
+    "conflict": "Conflict",
+    "operation_successful": "Operation successful",
+    "error_occurred": "An error occurred",
+    "unexpected_error": "An unexpected error occurred",
+    "resource_already_exists": "Resource already exists",
+    "invalid_reference": "Invalid reference",
+    "database_constraint_error": "Database constraint error",
+    "database_error": "Database error"
+  },
+  "language": {
+    "changed": "Language changed successfully",
+    "not_supported": "Language not supported",
+    "current": "Current language"
+  },
+  "health": {
+    "service_running": "Service is running",
+    "database_healthy": "Database connection is healthy",
+    "database_failed": "Database connection failed: {error}"
+  }
+}

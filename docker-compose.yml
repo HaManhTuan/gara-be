@@ -1,0 +1,89 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: gara_app
+    restart: always
+    ports:
+      - "8001:8000"
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@db:5432/gara_db
+      - DEBUG=True
+      - SERVER_HOST=0.0.0.0
+      - SERVER_PORT=8000
+      - REDIS_HOST=redis
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - FIREBASE_SERVICE_ACCOUNT_PATH=/app/config/fixautocar-26c43-firebase-adminsdk-fbsvc-923b1076a1.json
+    volumes:
+      - ./:/app
+    depends_on:
+      - db
+      - redis
+    networks:
+      - gara-network
+
+  db:
+    image: postgres:17-alpine
+    container_name: gara_db
+    restart: always
+    ports:
+      - "5433:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=gara_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - gara-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:alpine
+    container_name: gara_redis
+    restart: always
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - gara-network
+
+  celery_worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: gara_celery_worker
+    restart: always
+    command: poetry run celery -A app.workers.celery_app worker --pool=gevent --concurrency=200 --loglevel=info
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/gara_db
+      - REDIS_HOST=redis
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    depends_on:
+      - app
+      - db
+      - redis
+    networks:
+      - gara-network
+    healthcheck:
+      test: ["CMD-SHELL", "celery -A app.workers.celery_app inspect ping -d celery@$$HOSTNAME || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  gara-network:
+    driver: bridge

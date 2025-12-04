@@ -1,0 +1,8 @@
+---
+alwaysApply: true
+---
+
+1, Project running using Poetry, so alway using poetry to run project
+2, Coding should follow SOLID principle and clean code
+3, Document is root in README.md file, it will referent to other doucment in docs folder
+4, After coding done, run "poetry run pre-commit run --all-files" to verify
