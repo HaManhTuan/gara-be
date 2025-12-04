@@ -1,0 +1,65 @@
+### Authentication Endpoints
+### Base URL: http://localhost:8000
+
+### Variables
+@baseUrl = http://localhost:8000
+@apiVersion = v1
+@username = testuser
+@email = test@example.com
+@password = testpassword123
+
+### 1. Health Check
+GET {{baseUrl}}/health
+
+###
+
+### 2. User Registration
+POST {{baseUrl}}/api/{{apiVersion}}/auth/register
+Content-Type: application/json
+
+{
+    "username": "tuanhanb98",
+    "email": "tuanhanb98@gmail.com",
+    "password": "12345678",
+    "full_name": "Manh Tuan Ha"
+}
+
+###
+
+### 3. User Login (OAuth2 Token)
+POST {{baseUrl}}/api/{{apiVersion}}/auth/token
+Content-Type: application/x-www-form-urlencoded
+
+username={{username}}&password={{password}}
+
+###
+
+### 4. Get Current User Profile (Protected)
+# Copy the access_token from the login response above
+@accessToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0dXNlciIsImV4cCI6MTc2MTgxMDIxOH0.JMoW0UrtMqas_x8xnJ4jbNq8NWFxsoWhWb8rcXq0iYs
+
+GET {{baseUrl}}/api/{{apiVersion}}/auth/profile
+Authorization: Bearer {{accessToken}}
+
+###
+
+### 5. Test Invalid Login
+POST {{baseUrl}}/api/{{apiVersion}}/auth/token
+Content-Type: application/x-www-form-urlencoded
+
+username=invalid@example.com&password=wrongpassword
+
+###
+
+### 6. Test Registration with Existing Email
+POST {{baseUrl}}/api/{{apiVersion}}/auth/register
+Content-Type: application/json
+
+{
+    "username": "anotheruser",
+    "email": "{{email}}",
+    "password": "{{password}}",
+    "full_name": "Another User"
+}
+
+###

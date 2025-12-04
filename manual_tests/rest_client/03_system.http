@@ -1,0 +1,89 @@
+### System and Utility Endpoints
+### Base URL: http://localhost:8000
+
+### Variables
+@baseUrl = http://localhost:8000
+@apiVersion = v1
+@accessToken = your_access_token_here
+
+### 1. Health Check
+GET {{baseUrl}}/health
+
+###
+
+### 2. API Documentation (Swagger UI)
+GET {{baseUrl}}/docs
+
+###
+
+### 3. ReDoc Documentation
+GET {{baseUrl}}/redoc
+
+###
+
+### 4. OpenAPI Schema
+GET {{baseUrl}}/openapi.json
+
+###
+
+### 5. Get Available Languages
+GET {{baseUrl}}/api/{{apiVersion}}/language/
+
+###
+
+### 6. Set Language Preference (English)
+POST {{baseUrl}}/api/{{apiVersion}}/language/set
+Content-Type: application/json
+
+{
+    "language": "en"
+}
+
+###
+
+### 7. Set Language Preference (Japanese)
+POST {{baseUrl}}/api/{{apiVersion}}/language/set
+Content-Type: application/json
+
+{
+    "language": "jp"
+}
+
+###
+
+### 8. Set Invalid Language
+POST {{baseUrl}}/api/{{apiVersion}}/language/set
+Content-Type: application/json
+
+{
+    "language": "invalid"
+}
+
+###
+
+### 9. Test Error Handling (404)
+GET {{baseUrl}}/api/{{apiVersion}}/nonexistent
+
+###
+
+### 10. Test Error Handling (Method Not Allowed)
+DELETE {{baseUrl}}/health
+
+###
+
+### 11. Test Error Handling (Invalid JSON)
+POST {{baseUrl}}/api/{{apiVersion}}/language/set
+Content-Type: application/json
+
+{
+    "language": "en"
+    "invalid": "json"
+}
+
+###
+
+### 12. Test CORS Headers
+OPTIONS {{baseUrl}}/api/{{apiVersion}}/users/
+Origin: http://localhost:3000
+
+###

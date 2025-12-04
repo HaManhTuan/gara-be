@@ -1,0 +1,395 @@
+---
+alwaysApply: true
+---
+## **Detailed Project Structure Guidelines**
+
+### **Controllers** (`app/controllers/`)
+**Base Class**: `APIRouter` from FastAPI
+**Flow**: `Request → Format → Service Logic → Format Response`
+**Conventions**:
+- One controller per domain
+- Use `@router.get/post/put/delete()` decorators
+- Return `ResponseBuilder.success()` or `ResponseBuilder.error()`
+- Use `response_model=SuccessResponse[SchemaType]` for type hints
+- Import schemas from `app.schemas.{domain}`
+- Delegate business logic to services
+- **Exception Handling**: Let middleware handle most exceptions, only handle specific business exceptions in controller
+- **Auth Router**: Use `@router.get("/auth/me")` for authenticated endpoints, apply auth middleware
+
+**Controller Flow**:
+1. **Receive Request**: FastAPI automatically validates request body/params
+2. **Format Input**: Convert request data to service-compatible format
+3. **Service Logic**: Call service methods for business logic
+4. **Format Response**: Convert service result to API response format
+5. **Return**: Use `ResponseBuilder` for consistent response structure
+
+**Example Structure**:
+```python
+from fastapi import APIRouter, Depends, HTTPException
+from app.schemas.common import ResponseBuilder, SuccessResponse
+from app.schemas.users import UserResponse, UserCreateRequest
+from app.services.user_service import user_service
+from app.exceptions import ValidationException
+
+router = APIRouter()
+
+@router.post("/", response_model=SuccessResponse[UserResponse])  # type: ignore[misc]
+async def create_user(user_data: UserCreateRequest) -> SuccessResponse[UserResponse]:
+    # 1. Request validation handled by FastAPI
+    # 2. Format input (already done by Pydantic)
+    # 3. Service logic
+    user = await user_service.create_user(user_data)
+    # 4. Format response
+    return ResponseBuilder.success(message="User created", data=user)
+
+@router.get("/auth/me", response_model=SuccessResponse[UserResponse])  # type: ignore[misc]
+async def get_current_user(current_user: User = Depends(get_current_user)) -> SuccessResponse[UserResponse]:
+    # Auth middleware handles authentication
+    return ResponseBuilder.success(message="User retrieved", data=current_user)
+```
+
+### **Services** (`app/services/`)
+**Base Class**: `BaseService[ModelType, RepositoryType]`
+**Conventions**:
+- One service per domain
+- Inherit from `BaseService[Model, Repository]`
+- **Use Base Methods**: Leverage `BaseService` methods as much as possible (CRUD operations)
+- **Custom Logic**: Only add custom methods when base methods don't suffice
+- Use dependency injection for repositories
+- Implement business logic and validation
+- Handle business exceptions
+- Use `get_trace_logger()` for logging
+
+**BaseService Methods Available**:
+- `create()` - Create new entity
+- `get_by_id()` - Get entity by ID
+- `get_all()` - Get all entities with pagination
+- `update()` - Update entity
+- `delete()` - Soft delete entity
+- `exists()` - Check if entity exists
+
+**Example Structure**:
+```python
+from app.services.base_service import BaseService
+from app.repositories.concrete.user_repository import UserRepository
+from app.models.user import User
+from app.exceptions import ConflictException
+
+class UserService(BaseService[User, UserRepository]):
+    def __init__(self) -> None:
+        super().__init__(UserRepository())
+
+    # Use base method for standard operations
+    async def create_user(self, user_data: UserCreate) -> User:
+        # Check if user exists (custom logic)
+        if await self.repository.exists_by_email(user_data.email):
+            raise ConflictException("User with this email already exists")
+
+        # Use base create method
+        return await self.create(user_data)
+
+    # Custom method only when needed
+    async def get_user_by_email(self, email: str) -> Optional[User]:
+        return await self.repository.get_by_email(email)
+```
+
+### **Repositories** (`app/repositories/`)
+**Base Classes**:
+- **Concrete Repositories**: `FullRepositoryImpl[ModelType]`
+- **Core Interfaces**: `FullRepository[ModelType]`
+**Conventions**:
+- Place in `concrete/` folder
+- Inherit from `FullRepositoryImpl[Model]`
+- **Use Base Methods**: Leverage `FullRepositoryImpl` methods as much as possible
+- **Custom Methods**: Only add domain-specific methods when base methods don't suffice
+- Use factory pattern for initialization
+- Use `get_trace_logger()` for logging
+
+**Repository Architecture**:
+```
+app/repositories/
+├── core/                          # Core repository interfaces and implementations
+│   ├── interfaces.py             # Abstract base classes (BaseRepository, FullRepository, etc.)
+│   ├── base_repository_impl.py    # Basic CRUD implementation
+│   ├── full_repository_impl.py    # Full implementation with relationships
+│   ├── query_builder.py          # Query building logic
+│   ├── optimistic_lock_validator.py  # Optimistic locking validation
+│   └── relationship_handler.py   # Relationship management
+├── concrete/                      # Domain-specific repositories
+│   ├── user_repository.py
+│   └── post_repository.py
+└── factory.py                     # Repository factory for dependency injection
+```
+
+**FullRepositoryImpl Methods Available**:
+- **Basic CRUD**: `create()`, `get_by_id()`, `get_all()`, `update()`, `delete()`, `exists()`
+- **Optimistic Locking**: `update_with_optimistic_lock()`
+- **Relationship Operations**: `create_with_relations()`, `update_with_optimistic_lock_and_relations()`, `manage_relations()`
+- **Cascade Operations**: `delete_with_cascade()`, `soft_delete()`, `restore()`
+
+**Relationship Handling**:
+The repository system provides comprehensive relationship management:
+
+1. **Relationship Types Supported**:
+   - One-to-One (`ONE_TO_ONE`)
+   - One-to-Many (`ONE_TO_MANY`)
+   - Many-to-One (`MANY_TO_ONE`)
+   - Many-to-Many (`MANY_TO_MANY`)
+
+2. **Relationship Operations**:
+   - `create_with_relations()`: Create entity with nested relationships
+   - `update_with_optimistic_lock_and_relations()`: Update with relationships and version checking
+   - `manage_relations()`: Add/remove relationships dynamically
+
+3. **Relationship Handler**: Automatically maps SQLAlchemy relationship directions to appropriate handler methods
+
+**Example Structure**:
+```python
+from app.repositories.core import FullRepositoryImpl
+from app.models.user import User
+from app.models.post import Post
+
+class UserRepository(FullRepositoryImpl[User]):
+    def __init__(self) -> None:
+        full_repo = repository_factory.create_full_repository(User)
+        super().__init__(
+            model=User,
+            query_builder=full_repo.query_builder,
+            optimistic_lock_validator=full_repo.optimistic_lock_validator,
+            relationship_handler=full_repo.relationship_handler,
+        )
+
+    # Custom method only when needed
+    async def get_by_email(self, db: AsyncSession, email: str) -> Optional[User]:
+        # Domain-specific method not available in base
+        query = select(User).where(User.email == email)
+        result = await db.execute(query)
+        return result.scalar_one_or_none()
+```
+
+**Relationship Data Structure**:
+```python
+# Example: Creating a user with posts
+user_data = {
+    "username": "john_doe",
+    "email": "john@example.com",
+    "posts": [  # Nested relationship data
+        {
+            "title": "My First Post",
+            "content": "This is my first post content"
+        },
+        {
+            "title": "My Second Post",
+            "content": "This is my second post content"
+        }
+    ]
+}
+
+# The repository will automatically handle the relationship creation
+user = await user_repository.create_with_relations(db, obj_in=user_data)
+```
+
+### **Models** (`app/models/`)
+**Base Class**: `BaseModel` from `app.models.base_model`
+**Conventions**:
+- One model per database table
+- Inherit from `BaseModel`
+- Use SQLAlchemy column types
+- Define relationships with `relationship()`
+- Include timestamps and soft delete fields
+
+**Example Structure**:
+```python
+from sqlalchemy import Column, String, Boolean
+from app.models.base_model import BaseModel
+
+class User(BaseModel):
+    __tablename__ = "users"
+
+    username = Column(String, unique=True, index=True, nullable=False)
+    email = Column(String, unique=True, index=True, nullable=False)
+```
+
+### **Schemas** (`app/schemas/`)
+**Base Class**: `BaseSchema` from `app.schemas.common.base_schema`
+**Folder Structure**:
+```
+app/schemas/
+├── common/                    # Shared schemas
+│   ├── base_schema.py        # BaseSchema class
+│   └── response.py           # ResponseBuilder, SuccessResponse, ErrorResponse
+├── {domain}/                 # Domain-specific schemas (users, posts, etc.)
+│   ├── __init__.py           # Export all schemas
+│   ├── schema.py             # Internal schemas for application logic
+│   ├── request.py            # API request/response schemas
+│   └── converters.py         # Conversion functions between schemas
+└── languages/                # Language-specific schemas
+    ├── __init__.py
+    └── request.py
+```
+
+**Conventions**:
+- **Internal Schemas** (`schema.py`): For application logic, business rules
+- **Request/Response Schemas** (`request.py`): For API endpoints
+- **Converters** (`converters.py`): Conversion functions between schema layers
+- Use Pydantic `Field()` for validation
+- Follow naming: `{Entity}{Action}Request/Response`
+- **Export Pattern**: Always export from `__init__.py` for clean imports
+
+**Schema Types**:
+- **Request Schemas**: Input validation for API endpoints
+- **Response Schemas**: Output format for API responses
+- **Internal Schemas**: Business logic schemas (not exposed to API)
+- **Converter Functions**: Transform between different schema types
+
+**Example Structure**:
+```python
+# request.py
+from pydantic import Field, EmailStr
+from app.schemas.common.base_schema import BaseSchema
+
+class UserCreateRequest(BaseSchema):
+    username: str = Field(..., min_length=3, max_length=50)
+    email: EmailStr
+    password: str = Field(..., min_length=8)
+
+class UserResponse(BaseSchema):
+    id: str
+    username: str
+    email: str
+    created_at: datetime
+    is_active: bool
+
+# schema.py (Internal)
+class UserCreate(BaseSchema):
+    username: str
+    email: str
+    password_hash: str
+
+# converters.py
+def user_create_request_to_internal(request: UserCreateRequest) -> UserCreate:
+    return UserCreate(
+        username=request.username,
+        email=request.email,
+        password_hash=hash_password(request.password)
+    )
+
+def user_model_to_response(user: User) -> UserResponse:
+    return UserResponse(
+        id=str(user.id),
+        username=user.username,
+        email=user.email,
+        created_at=user.created_at,
+        is_active=user.is_active
+    )
+
+# __init__.py
+from .request import UserCreateRequest, UserResponse
+from .schema import UserCreate
+from .converters import user_create_request_to_internal, user_model_to_response
+
+__all__ = [
+    "UserCreateRequest",
+    "UserResponse",
+    "UserCreate",
+    "user_create_request_to_internal",
+    "user_model_to_response"
+]
+```
+
+### **Middlewares** (`app/middlewares/`)
+**Base Class**: `BaseHTTPMiddleware` from Starlette
+**Conventions**:
+- One middleware per concern
+- Inherit from `BaseHTTPMiddleware`
+- Implement `async def dispatch()` method
+- Use `get_trace_logger()` for logging
+- Handle request/response processing
+
+**Example Structure**:
+```python
+from starlette.middleware.base import BaseHTTPMiddleware
+from app.utils.tracing import get_trace_logger
+
+class CustomMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        # Middleware logic
+        response = await call_next(request)
+        return response
+```
+
+### **Exceptions** (`app/exceptions.py`)
+**Base Class**: `Exception` (Python built-in)
+**Conventions**:
+- All exceptions in single file
+- Inherit from `AppException` for application exceptions
+- Include status codes and details
+- Use descriptive names
+
+**Example Structure**:
+```python
+from fastapi import status
+
+class AppException(Exception):
+    def __init__(self, message: str, status_code: int = 500, details: Optional[Dict] = None):
+        self.message = message
+        self.status_code = status_code
+        self.details = details or {}
+
+class ValidationException(AppException):
+    def __init__(self, message: str, details: Optional[Dict] = None):
+        super().__init__(message, status.HTTP_422_UNPROCESSABLE_ENTITY, details)
+```
+
+### **Utils** (`app/utils/`)
+**Conventions**:
+- One file per utility domain
+- Use `get_trace_logger()` for logging
+- Keep functions pure when possible
+- Use type hints
+
+**Example Structure**:
+```python
+from app.utils.tracing import get_trace_logger
+
+logger = get_trace_logger("utility-name")
+
+def utility_function(param: str) -> str:
+    logger.info(f"Processing: {param}")
+    return processed_result
+```
+
+### **Configuration** (`app/config/`)
+**Conventions**:
+- Use Pydantic Settings for configuration
+- Environment variable loading
+- Type validation and defaults
+- Separate files by concern
+
+**Example Structure**:
+```python
+from pydantic import BaseSettings
+
+class Settings(BaseSettings):
+    database_url: str
+    secret_key: str
+    debug: bool = False
+
+    class Config:
+        env_file = ".env"
+```
+
+## **Key Conventions Summary**
+
+1. **Import Order**: Standard library → Third party → Local imports
+2. **Naming**: `snake_case` for files/functions, `PascalCase` for classes
+3. **Logging**: Use `get_trace_logger("{component-name}")` everywhere
+4. **Type Hints**: Always use type annotations
+5. **Error Handling**: Use custom exceptions, let middleware handle HTTP exceptions
+6. **Response Format**: Always use `ResponseBuilder` for consistent responses
+7. **Dependency Injection**: Use FastAPI's `Depends()` for services
+8. **Schema Conversion**: Use converter functions between schema layers
+9. **Repository Pattern**: Use factory for repository creation
+10. **Service Pattern**: Inherit from `BaseService` for consistency
+
+This structure ensures consistency, maintainability, and follows established patterns throughout the codebase.

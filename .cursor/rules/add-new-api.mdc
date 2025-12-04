@@ -1,0 +1,7 @@
+---
+description: using when add new api
+alwaysApply: false
+---
+When add new API, you need to read docs/development-guide.md to understand how to add new api and follow it.
+
+Read docs/quick-reference.md to see how to using base_service and base_repository

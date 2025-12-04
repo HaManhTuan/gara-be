@@ -1,0 +1,140 @@
+[tool.poetry]
+name = "basefastapimvc"
+version = "0.1.0"
+description = "FastAPI MVC application with service layer"
+authors = ["tuanhanb98@gmail.com"]
+package-mode = false
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+fastapi = "^0.116.1"
+uvicorn = "^0.23.2"
+sqlalchemy = "^2.0.23"
+pydantic = {extras = ["email"], version = "^2.4.2"}
+pydantic-settings = "^2.3.0"
+python-dotenv = "^1.0.0"
+alembic = "^1.12.1"
+werkzeug = "^3.0.0"
+celery = "^5.3.4"
+gevent = "^24.2.1"
+redis = "^5.0.1"
+apscheduler = "^3.10.4"
+loguru = "^0.7.2"
+pyjwt = "^2.10.1"
+python-multipart = "^0.0.20"
+asyncpg = "^0.30.0"
+psycopg2-binary = "^2.9.9"
+greenlet = "^3.0.0"
+httpx = "^0.28.1"
+babel = "^2.17.0"
+python-babel = "^0.0.0.dev0"
+firebase-admin = "^6.5.0"
+
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4.3"
+black = "^23.10.1"
+isort = "^5.12.0"
+flake8 = "^6.1.0"
+pytest-cov = "^4.1.0"
+pytest-asyncio = "<1.0.0"
+aiosqlite = "^0.21.0"
+pre-commit = "^3.6.0"
+mypy = "^1.7.0"
+bandit = "^1.7.5"
+safety = "^2.3.5"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+# Tool configurations
+[tool.black]
+line-length = 88
+target-version = ['py39', 'py310', 'py311', 'py312']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+)/
+'''
+
+[tool.isort]
+profile = "black"
+line_length = 88
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+ensure_newline_before_comments = true
+skip_glob = ["**/migrations/*"]
+
+[tool.mypy]
+python_version = "3.9"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+show_error_codes = true
+
+[[tool.mypy.overrides]]
+module = [
+    "celery.*",
+    "redis.*",
+    "sqlalchemy.*",
+    "alembic.*",
+    "loguru.*",
+    "pydantic.*",
+    "fastapi.*",
+    "uvicorn.*",
+    "werkzeug.*",
+    "apscheduler.*",
+    "httpx.*",
+    "asyncpg.*",
+    "psycopg2.*",
+    "greenlet.*",
+    "gevent.*",
+]
+ignore_missing_imports = true
+
+[tool.bandit]
+exclude_dirs = ["tests", "migrations"]
+skips = ["B101", "B601"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+    "--verbose",
+    "--tb=short",
+    "--cov=app",
+    "--cov-report=term-missing",
+    "--cov-report=html",
+    "--cov-report=xml",
+]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+    "unit: marks tests as unit tests",
+]

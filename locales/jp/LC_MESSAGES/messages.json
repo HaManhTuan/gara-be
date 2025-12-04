@@ -1,0 +1,67 @@
+{
+  "auth": {
+    "login_success": "ログインに成功しました",
+    "login_failed": "ユーザー名またはパスワードが無効です",
+    "login_inactive_user": "非アクティブユーザー",
+    "register_success": "登録に成功しました",
+    "register_user_exists": "ユーザーは既に存在します",
+    "token_invalid": "認証情報を検証できませんでした",
+    "token_expired": "トークンの有効期限が切れています",
+    "token_missing": "認証トークンが不足しています",
+    "profile_updated": "プロフィールが正常に更新されました",
+    "profile_not_found": "プロフィールが見つかりません",
+    "password_mismatch": "パスワードが一致しません",
+    "invalid_email": "無効なメール形式",
+    "username_too_short": "ユーザー名は3文字以上である必要があります",
+    "username_too_long": "ユーザー名は50文字以下である必要があります",
+    "password_too_short": "パスワードは8文字以上である必要があります"
+  },
+  "user": {
+    "user_not_found": "ユーザーが見つかりません",
+    "user_created": "ユーザーが正常に作成されました",
+    "user_updated": "ユーザーが正常に更新されました",
+    "user_deleted": "ユーザーが正常に削除されました",
+    "user_restored": "ユーザーが正常に復元されました",
+    "email_already_exists": "メールアドレスは既に存在します",
+    "username_already_exists": "ユーザー名は既に存在します"
+  },
+  "validation": {
+    "required_field": "このフィールドは必須です",
+    "invalid_format": "無効な形式",
+    "field_too_short": "フィールドが短すぎます",
+    "field_too_long": "フィールドが長すぎます",
+    "invalid_value": "無効な値"
+  },
+  "optimistic_lock": {
+    "conflict": "レコードが別のプロセスによって変更されました。更新して再試行してください。",
+    "not_found": "レコードが見つかりません",
+    "invalid_timestamp": "無効なupdated_atタイムスタンプ形式"
+  },
+  "general": {
+    "success": "成功",
+    "error": "エラー",
+    "not_found": "見つかりません",
+    "unauthorized": "認証されていません",
+    "forbidden": "禁止されています",
+    "internal_error": "予期しないエラーが発生しました",
+    "bad_request": "不正なリクエスト",
+    "conflict": "競合",
+    "operation_successful": "操作が正常に完了しました",
+    "error_occurred": "エラーが発生しました",
+    "unexpected_error": "予期しないエラーが発生しました",
+    "resource_already_exists": "リソースは既に存在します",
+    "invalid_reference": "無効な参照",
+    "database_constraint_error": "データベース制約エラー",
+    "database_error": "データベースエラー"
+  },
+  "language": {
+    "changed": "言語が正常に変更されました",
+    "not_supported": "サポートされていない言語",
+    "current": "現在の言語"
+  },
+  "health": {
+    "service_running": "サービスが実行中です",
+    "database_healthy": "データベース接続は正常です",
+    "database_failed": "データベース接続に失敗しました: {error}"
+  }
+}

@@ -1,0 +1,97 @@
+### User Management Endpoints
+### Base URL: http://localhost:8000
+
+### Variables
+@baseUrl = http://localhost:8000
+@apiVersion = v1
+@accessToken = your_access_token_here
+@userId = user_id_here
+
+### 1. List All Users (Protected)
+GET {{baseUrl}}/api/{{apiVersion}}/users/
+Authorization: Bearer {{accessToken}}
+
+###
+
+### 2. Create New User (Protected)
+POST {{baseUrl}}/api/{{apiVersion}}/users/
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+    "username": "newuser",
+    "email": "newuser@example.com",
+    "password": "newpassword123",
+    "full_name": "New User",
+    "is_active": true
+}
+
+###
+
+### 3. Get User by ID (Protected)
+# Replace {{userId}} with actual user ID from previous responses
+GET {{baseUrl}}/api/{{apiVersion}}/users/{{userId}}
+Authorization: Bearer {{accessToken}}
+
+###
+
+### 4. Update User (Protected)
+PUT {{baseUrl}}/api/{{apiVersion}}/users/{{userId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+    "username": "updateduser",
+    "email": "updated@example.com",
+    "full_name": "Updated User",
+    "is_active": true
+}
+
+###
+
+### 5. Partial Update User (Protected)
+PATCH {{baseUrl}}/api/{{apiVersion}}/users/{{userId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+    "full_name": "Partially Updated User"
+}
+
+###
+
+### 6. Delete User (Protected)
+DELETE {{baseUrl}}/api/{{apiVersion}}/users/{{userId}}
+Authorization: Bearer {{accessToken}}
+
+###
+
+### 7. Get User Profile (Alternative endpoint)
+GET {{baseUrl}}/api/{{apiVersion}}/users/profile
+Authorization: Bearer {{accessToken}}
+
+###
+
+### 8. Test Unauthorized Access (No Token)
+GET {{baseUrl}}/api/{{apiVersion}}/users/
+
+###
+
+### 9. Test Invalid User ID
+GET {{baseUrl}}/api/{{apiVersion}}/users/invalid-id
+Authorization: Bearer {{accessToken}}
+
+###
+
+### 10. Test Create User with Invalid Data
+POST {{baseUrl}}/api/{{apiVersion}}/users/
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+    "username": "",
+    "email": "invalid-email",
+    "password": "123"
+}
+
+###

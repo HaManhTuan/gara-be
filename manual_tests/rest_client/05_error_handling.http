@@ -1,0 +1,153 @@
+### Error Handling and Edge Cases
+### Testing various error scenarios and edge cases
+
+### Variables
+@baseUrl = http://localhost:8000
+@apiVersion = v1
+@accessToken = your_access_token_here
+@username = testuser
+
+### 1. Test 404 Error
+GET {{baseUrl}}/api/{{apiVersion}}/nonexistent
+
+###
+
+### 2. Test Method Not Allowed
+DELETE {{baseUrl}}/health
+
+###
+
+### 3. Test Invalid Login Format
+POST {{baseUrl}}/api/{{apiVersion}}/auth/token
+Content-Type: application/x-www-form-urlencoded
+
+username=testuser
+password=testpassword123
+
+###
+
+### 4. Test Missing Required Fields
+POST {{baseUrl}}/api/{{apiVersion}}/auth/register
+Content-Type: application/json
+
+{
+    "username": "testuser"
+}
+
+###
+
+### 5. Test Invalid Email Format
+POST {{baseUrl}}/api/{{apiVersion}}/auth/register
+Content-Type: application/json
+
+{
+    "username": "testuser",
+    "email": "invalid-email",
+    "password": "testpassword123",
+    "full_name": "Test User"
+}
+
+###
+
+### 6. Test Weak Password
+POST {{baseUrl}}/api/{{apiVersion}}/auth/register
+Content-Type: application/json
+
+{
+    "username": "testuser",
+    "email": "test@example.com",
+    "password": "123",
+    "full_name": "Test User"
+}
+
+###
+
+### 7. Test Unauthorized Access (No Token)
+GET {{baseUrl}}/api/{{apiVersion}}/users/
+
+###
+
+### 8. Test Invalid Token
+GET {{baseUrl}}/api/{{apiVersion}}/users/
+Authorization: Bearer invalid_token
+
+###
+
+### 9. Test Expired Token (if applicable)
+GET {{baseUrl}}/api/{{apiVersion}}/users/
+Authorization: Bearer expired_token_here
+
+###
+
+### 10. Test Invalid User ID Format
+GET {{baseUrl}}/api/{{apiVersion}}/users/invalid-id-format
+Authorization: Bearer {{accessToken}}
+
+###
+
+### 11. Test Non-existent User ID
+GET {{baseUrl}}/api/{{apiVersion}}/users/00000000-0000-0000-0000-000000000000
+Authorization: Bearer {{accessToken}}
+
+###
+
+### 12. Test Duplicate Email Registration
+POST {{baseUrl}}/api/{{apiVersion}}/auth/register
+Content-Type: application/json
+
+{
+    "username": "anotheruser",
+    "email": "test@example.com",
+    "password": "testpassword123",
+    "full_name": "Another User"
+}
+
+###
+
+### 13. Test Duplicate Username Registration
+POST {{baseUrl}}/api/{{apiVersion}}/auth/register
+Content-Type: application/json
+
+{
+    "username": "testuser",
+    "email": "another@example.com",
+    "password": "testpassword123",
+    "full_name": "Another User"
+}
+
+###
+
+### 14. Test Large Payload
+POST {{baseUrl}}/api/{{apiVersion}}/users/
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+    "username": "testuser",
+    "email": "test@example.com",
+    "password": "testpassword123",
+    "full_name": "This is a very long full name that exceeds normal limits and should test the validation of the full name field length restrictions",
+    "is_active": true
+}
+
+###
+
+### 15. Test SQL Injection Attempt
+GET {{baseUrl}}/api/{{apiVersion}}/users/1'; DROP TABLE users; --
+Authorization: Bearer {{accessToken}}
+
+###
+
+### 16. Test XSS Attempt
+POST {{baseUrl}}/api/{{apiVersion}}/users/
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+    "username": "<script>alert('xss')</script>",
+    "email": "test@example.com",
+    "password": "testpassword123",
+    "full_name": "Test User"
+}
+
+###
