@@ -1,0 +1,69 @@
+### Email OTP Testing
+
+## Email OTP Login Flow (Recommended)
+
+### Step 1: Login with Email (Send OTP)
+POST {{base_url}}/api/v1/auth/email/login
+Content-Type: application/json
+
+{
+  "email": "test@example.com"
+}
+
+###
+
+### Step 2: Verify OTP and Get Access Token
+POST {{base_url}}/api/v1/auth/email/verify
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "otp": "123456"
+}
+
+###
+
+## Send OTP to Email (Generic)
+POST {{base_url}}/api/v1/email/send-otp
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "expiry_minutes": 5
+}
+
+###
+
+## Verify OTP
+POST {{base_url}}/api/v1/email/verify-otp
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "otp": "123456"
+}
+
+###
+
+## Send Welcome Email
+POST {{base_url}}/api/v1/email/send-welcome
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "name": "John Doe"
+}
+
+###
+
+## Send Password Reset Email
+POST {{base_url}}/api/v1/email/send-password-reset
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "reset_token": "abc123def456",
+  "reset_url": "https://example.com/reset-password?token=abc123def456"
+}
+
+###

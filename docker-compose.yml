@@ -55,6 +55,23 @@ services:
     networks:
       - gara-network
 
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: gara_mailpit
+    restart: always
+    ports:
+      - "8025:8025"  # Web UI
+      - "1025:1025"  # SMTP
+    environment:
+      - MP_MAX_MESSAGES=5000
+      - MP_DATABASE=/data/mailpit.db
+      - MP_SMTP_AUTH_ACCEPT_ANY=1
+      - MP_SMTP_AUTH_ALLOW_INSECURE=1
+    volumes:
+      - mailpit_data:/data
+    networks:
+      - gara-network
+
   celery_worker:
     build:
       context: .
@@ -83,6 +100,7 @@ services:
 volumes:
   postgres_data:
   redis_data:
+  mailpit_data:
 
 networks:
   gara-network:

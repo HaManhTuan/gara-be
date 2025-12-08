@@ -160,6 +160,56 @@ class UserService(BaseService[User, UserRepository]):
 
         return user, True
 
+    async def get_or_create_user_by_email(
+        self,
+        db: AsyncSession,
+        email: str,
+        full_name: Optional[str] = None,
+    ) -> Tuple[User, bool]:
+        """
+        Get or create user by email (for email OTP login)
+
+        Args:
+            db: Database session
+            email: User email
+            full_name: User full name (optional)
+
+        Returns:
+            Tuple of (User, is_new_user)
+        """
+        # Try to find existing user by email
+        user = await self.get_by_email(db, email=email)
+        
+        if user:
+            logger.info(f"Existing user found by email: {email}")
+            return user, False
+
+        # Create new user
+        logger.info(f"Creating new user from email login: {email}")
+
+        # Generate username from email
+        username = email.split("@")[0]
+        
+        # Check if username exists, if so append a number
+        base_username = username
+        counter = 1
+        while await self.get_by_username(db, username=username):
+            username = f"{base_username}{counter}"
+            counter += 1
+
+        # Create user data
+        user_data = UserCreate(
+            username=username,
+            email=email,
+            password=email,  # Use email as password (won't be used for login with OTP)
+            full_name=full_name or username,
+        )
+
+        user = await user_repository.create(db, obj_in=user_data)
+        logger.info(f"New user created from email OTP login: {email}")
+
+        return user, True
+
 
 # Create instance for dependency injection
 user_service = UserService()

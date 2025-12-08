@@ -9,6 +9,12 @@ from app.config.database import get_db
 from app.config.settings import settings
 from app.models.user import User
 from app.schemas.common import ResponseBuilder, SuccessResponse
+from app.schemas.email_otp import (
+    EmailLoginRequest,
+    EmailLoginResponse,
+    VerifyOTPLoginRequest,
+    VerifyOTPLoginResponse,
+)
 from app.schemas.firebase_auth import FirebaseTokenVerifyRequest, FirebaseTokenVerifyResponse
 from app.schemas.users import (
     UserProfileResponse,
@@ -17,6 +23,7 @@ from app.schemas.users import (
     convert_user_registration_to_internal,
     convert_user_update_request_to_internal,
 )
+from app.services.email_service import email_service
 from app.services.firebase_service import firebase_service
 from app.services.user_service import user_service
 from app.utils.auth import create_access_token, get_current_user
@@ -221,3 +228,164 @@ async def update_user_profile(
         message=__("auth.profile_updated"),
         data=user_profile,
     )
+
+
+@public_router.post(
+    "/email/login",
+    response_model=SuccessResponse[EmailLoginResponse],
+    status_code=status.HTTP_200_OK,
+    summary="Login with email (send OTP)",
+    description="Initiate email OTP login flow by sending OTP to email"
+)
+async def email_login(
+    request: EmailLoginRequest,
+    db: AsyncSession = Depends(get_db),
+) -> SuccessResponse[EmailLoginResponse]:
+    """
+    Step 1: Initiate email OTP login
+    
+    - Send OTP to email
+    - Create user if doesn't exist
+    - Return success status
+    
+    Args:
+        request: EmailLoginRequest with email
+        db: Database session
+        
+    Returns:
+        EmailLoginResponse with status and OTP (in debug mode)
+    """
+    try:
+        logger.info(f"Email login initiated for: {request.email}")
+        
+        # Check if user exists or create new one
+        user, is_new_user = await user_service.get_or_create_user_by_email(
+            db=db,
+            email=request.email
+        )
+        
+        if is_new_user:
+            logger.info(f"New user created during email login: {request.email}")
+        
+        # Send OTP email
+        result = await email_service.send_otp_email(
+            to_email=request.email,
+            expiry_minutes=settings.OTP_EXPIRY_MINUTES
+        )
+        
+        if not result["success"]:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to send OTP email"
+            )
+        
+        response_data = EmailLoginResponse(
+            success=True,
+            message="OTP sent to your email" if not is_new_user else "Account created. OTP sent to your email",
+            email=request.email,
+            expiry_minutes=result["expiry_minutes"],
+            otp=result.get("otp") if settings.DEBUG else None
+        )
+        
+        return ResponseBuilder.success(
+            message="OTP sent successfully",
+            data=response_data
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error in email login: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Login failed: {str(e)}"
+        )
+
+
+@public_router.post(
+    "/email/verify",
+    response_model=SuccessResponse[VerifyOTPLoginResponse],
+    status_code=status.HTTP_200_OK,
+    summary="Verify OTP and complete login",
+    description="Step 2: Verify OTP code and receive JWT access token"
+)
+async def verify_email_otp_login(
+    request: VerifyOTPLoginRequest,
+    db: AsyncSession = Depends(get_db),
+) -> SuccessResponse[VerifyOTPLoginResponse]:
+    """
+    Step 2: Verify OTP and complete login
+    
+    - Verify OTP code
+    - Generate JWT access token
+    - Return token and user info
+    
+    Args:
+        request: VerifyOTPLoginRequest with email and otp
+        db: Database session
+        
+    Returns:
+        VerifyOTPLoginResponse with access token
+    """
+    try:
+        logger.info(f"Verifying OTP for email login: {request.email}")
+        
+        # Verify OTP
+        is_valid = await email_service.verify_otp(request.email, request.otp)
+        
+        if not is_valid:
+            logger.warning(f"Invalid OTP for email: {request.email}")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid or expired OTP"
+            )
+        
+        # Get user by email
+        user = await user_service.get_by_email(db, email=request.email)
+        
+        if not user:
+            logger.error(f"User not found after OTP verification: {request.email}")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found"
+            )
+        
+        # Check if user is active
+        if not user.is_active:
+            logger.warning(f"Login attempt for inactive user: {request.email}")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="User account is inactive"
+            )
+        
+        # Create JWT access token
+        access_token_expires = timedelta(minutes=settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES)
+        access_token = create_access_token(
+            data={"sub": user.username},
+            expires_delta=access_token_expires
+        )
+        
+        logger.info(f"Email OTP login successful for: {request.email}")
+        
+        response_data = VerifyOTPLoginResponse(
+            success=True,
+            message="Login successful",
+            access_token=access_token,
+            token_type="bearer",
+            user_id=user.id,
+            email=user.email
+        )
+        
+        return ResponseBuilder.success(
+            message=__("auth.login_success"),
+            data=response_data
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error in OTP verification: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Verification failed: {str(e)}"
+        )

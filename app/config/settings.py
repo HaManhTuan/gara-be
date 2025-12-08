@@ -64,6 +64,20 @@ class Settings(BaseSettings):
     FIREBASE_SERVICE_ACCOUNT_PATH: Optional[str] = None  # Path to service account JSON file
     FIREBASE_SERVICE_ACCOUNT_JSON: Optional[str] = None  # Or JSON string in environment variable
 
+    # Email Configuration
+    SMTP_HOST: str = "mailpit"  # Use "mailpit" for Docker, "localhost" for local dev
+    SMTP_PORT: int = 1025  # Mailpit SMTP port (use 587 for production SMTP)
+    SMTP_USERNAME: Optional[str] = None  # Set for production SMTP servers
+    SMTP_PASSWORD: Optional[str] = None  # Set for production SMTP servers
+    SMTP_USE_TLS: bool = False  # Set to True for production (port 587)
+    SMTP_USE_SSL: bool = False  # Set to True if using port 465
+    EMAIL_FROM: str = "noreply@gara-api.com"  # Default sender email
+    EMAIL_FROM_NAME: str = "Gara API"  # Default sender name
+    
+    # OTP Configuration
+    OTP_EXPIRY_MINUTES: int = 5  # OTP expiry time in minutes
+    OTP_LENGTH: int = 6  # Length of OTP code
+
 
 # Initialize settings
 settings = Settings()

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your OTP Code</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            background-color: #ffffff;
+            border-radius: 8px;
+            padding: 40px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            color: #2c3e50;
+            margin: 0;
+            font-size: 24px;
+        }
+        .otp-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 8px;
+            text-align: center;
+            margin: 30px 0;
+        }
+        .otp-code {
+            font-size: 36px;
+            font-weight: bold;
+            letter-spacing: 8px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+        }
+        .otp-label {
+            font-size: 14px;
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .info {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-left: 4px solid #667eea;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .info p {
+            margin: 8px 0;
+            font-size: 14px;
+        }
+        .warning {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            font-size: 12px;
+            color: #7f8c8d;
+        }
+        .expiry {
+            font-size: 14px;
+            color: #e74c3c;
+            text-align: center;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔐 Your Verification Code</h1>
+        </div>
+        
+        <p>Hello,</p>
+        <p>You have requested a verification code for your account. Please use the following OTP code to complete your verification:</p>
+        
+        <div class="otp-box">
+            <div class="otp-label">Your OTP Code</div>
+            <div class="otp-code">{{ otp }}</div>
+            <div class="expiry">⏱ Valid for {{ expiry_minutes }} minutes</div>
+        </div>
+        
+        <div class="info">
+            <p><strong>Important Information:</strong></p>
+            <p>• This code will expire in <strong>{{ expiry_minutes }} minutes</strong></p>
+            <p>• Do not share this code with anyone</p>
+            <p>• If you didn't request this code, please ignore this email</p>
+        </div>
+        
+        <p>For your security, this code can only be used once.</p>
+        
+        <div class="footer">
+            <p>This is an automated message from Gara API</p>
+            <p>Email sent to: {{ email }}</p>
+            <p>&copy; 2025 Gara API. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

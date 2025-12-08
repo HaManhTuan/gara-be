@@ -30,6 +30,10 @@ httpx = "^0.28.1"
 babel = "^2.17.0"
 python-babel = "^0.0.0.dev0"
 firebase-admin = "^6.5.0"
+aiosmtplib = "^3.0.1"
+email-validator = "^2.1.0"
+jinja2 = "^3.1.2"
+redis = {extras = ["hiredis"], version = "^5.0.1"}
 
 
 [tool.poetry.group.dev.dependencies]
@@ -111,6 +115,8 @@ module = [
     "psycopg2.*",
     "greenlet.*",
     "gevent.*",
+    "aiosmtplib.*",
+    "jinja2.*",
 ]
 ignore_missing_imports = true
 
